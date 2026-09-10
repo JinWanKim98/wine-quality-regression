@@ -9,7 +9,7 @@ classification half and a regression half.
 | What | Scope |
 |---|---|
 | **Code** | **Linear Regression** — the model, the tuning, and its performance report. Random Forest and Gradient Boosting were coded by other members, as was the whole classification half. |
-| **Report** | §2.2 data cleaning and preprocessing · §2.3 the three regression models · §3.2 regression model setup and fine-tuning |
+| **Report** | §2.2 preprocessing — the standardisation half, shared with the member who wrote the rest of it · §2.3 the three regression models · §3.2 regression model setup and fine-tuning |
 | **Presentation** | Section 3 — introduction of the three regression models and their setup |
 
 The comparison and analysis of the three regression models — section 4 of the presentation — was a
@@ -51,9 +51,17 @@ forest has a gap of 0.445 and a training R² of 0.9170 against a test R² of 0.3
 substantially memorised the training set, and what that bought over my baseline is 0.049 RMSE.
 
 Linear Regression cannot overfit here because there is almost nothing in it to overfit with: eleven
-coefficients and an intercept. That limitation is what makes it a measurement. The distance between
-my train and test error is roughly the noise floor, and every model in the table is stuck near the
-same test error, so the ceiling in this problem is the eleven features and not the choice of
+coefficients and an intercept. The only hyperparameter worth searching was `fit_intercept`, and
+`True` won, which it almost always does — there was nothing for the grid search to decide. **Those
+two facts are the same fact.** A model with nothing to tune is a model that cannot flatter itself,
+which is what makes it usable as a ruler rather than a competitor. The distance between my train and
+test error is roughly the noise floor, every model in the table is stuck near the same test error,
+and the ceiling in this problem is therefore the eleven features and not the choice of algorithm.
+
+I reached the same conclusion once before by a different route. On a delivery-delay dataset I
+compared three classifiers and found that a model which learned nothing at all took the top spot on
+two of four metrics — there the metrics disagreed with each other, and here they agree and all report
+the same small number. Different symptom, same diagnosis: the limit was in the columns, not in the
 algorithm.
 
 ---
@@ -107,7 +115,9 @@ coefficients are on a common scale and can be compared to each other directly.
 
 ### 4. The sections I wrote
 
-`docs/regression_sections.docx` is my part of the report as submitted — three sections:
+`docs/CSCI323_FT14_Report.pdf` is the team's submitted report, and its first page is the work split —
+which section belonged to whom, in the team's own words. `docs/regression_sections.docx` is my part
+of it — three sections:
 
 - **§2.2 Data cleaning and preprocessing.** No missing values in either dataset — the UCI copies are
   clean — but duplicates are not rare: red drops from 1,599 rows to 1,359 and white from 4,898 to
@@ -126,10 +136,11 @@ Every figure in §3.2 is reproduced from the notebook's own cell outputs; I chec
 committed notebooks rather than transcribing from an earlier draft.
 
 One result in that table is worth naming because it points the same way as section 1. The Random
-Forest search space allowed `min_samples_leaf` of 1, 2 or 4 and `min_samples_split` of 2, 5 or 10.
-On red wine the search chose 4 and 10 — constrained leaves. On white it chose 1 and 2 — no
-constraint at all, which is the configuration that produced the 0.9170 training R². The same search
-space, run on a dataset three times larger, walked to the opposite end of it.
+Forest search ran over `min_samples_leaf` of 1, 2 or 4 and `min_samples_split` of 2, 5 or 10 — the
+same space on both datasets. On red wine it settled on 4 and 10, constrained leaves. On white it
+took 1 and 2, no constraint at all, which is the configuration behind that 0.9170 training R². The
+same space, run on a dataset three times larger, walked to the opposite end of itself, and putting
+the two rows next to each other in one table is how that becomes visible.
 
 ---
 
@@ -142,7 +153,8 @@ wine-quality-regression/
 ├── wine+quality/                  # UCI data, red and white, plus the variable description
 │                                  # notebooks read this path, so both stay where they were
 ├── docs/
-│   ├── regression_sections.docx   # my report sections 2.2, 2.3 and 3.2
+│   ├── CSCI323_FT14_Report.pdf         # the team's report; page 1 is the work split
+│   ├── regression_sections.docx        # my sections 2.2, 2.3 and 3.2
 │   └── CSCI323_FT14_Presentation.pdf   # includes the team's contribution table
 ├── images/                        # two charts, extracted from the notebook's own outputs
 └── README.md
@@ -166,10 +178,13 @@ Group project, five members, CSCI 323 at UOW (SIM Singapore), Semester 2 2026. T
 task at the start: one member per regression model for the coding and tuning, one for the regression
 comparison, and the classification half across the remaining members. I took Linear Regression.
 
-The notebooks are the team's submitted files, unchanged. Teammates are named in
-`docs/CSCI323_FT14_Presentation.pdf`, including on the contribution table, which is the point of a
-contribution table. No student ID numbers appear anywhere in this repository. The demo presentation
-was recorded by all five of us and is not included here.
+The notebooks are the team's submitted files, unchanged. Teammates are named throughout `docs/`,
+including on both the work split and the contribution table, which is the point of those tables.
+University ID numbers have been removed from the report; nothing else in it was altered, and no
+student ID appears anywhere in this repository.
+
+The presentation was recorded by all five of us and is on YouTube:
+**https://youtu.be/-RX6cVTDkVg** — my part is the regression models and their setup.
 
 ### Limitations
 
@@ -177,9 +192,6 @@ was recorded by all five of us and is not included here.
   section.** Their numbers are quoted here from the committed notebooks because my model is only
   interesting next to theirs. The reasoning about what those numbers mean is mine; the models and the
   comparison write-up are not.
-- **Tuning a linear regression is close to a formality.** The only hyperparameter searched was
-  `fit_intercept`, and `True` won, which it almost always does. The grid search around my model is
-  there for consistency with the other two, not because it had a decision to make.
 - **The train-test gap is a weak measure of overfitting on its own.** It shows the white-wine forest
   memorising, but a small gap does not prove a model is well specified — mine has a small gap because
   it is too rigid to fit the training set closely in the first place.
