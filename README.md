@@ -1,201 +1,53 @@
-# Wine Quality — the regression baseline, and what it cost to beat it
+# Wine Quality Regression
 
-**Five-person group project (CSCI 323 Modern AI).** Predicting wine quality scores from eleven
-physicochemical measurements, on the two UCI wine datasets — 1,599 red and 4,898 white — with both a
-classification half and a regression half.
+Five-person CSCI 323 group project at UOW (SIM Singapore). The team compared classification and regression models on the UCI red and white wine datasets. My modelling contribution was **Linear Regression**, including its pipeline, small parameter search and performance report.
 
-**My part, as the team split it:**
+## My contribution
 
-| What | Scope |
+| Deliverable | Scope |
 |---|---|
-| **Code** | **Linear Regression** — the model, the tuning, and its performance report. Random Forest and Gradient Boosting were coded by other members, as was the whole classification half. |
-| **Report** | §2.2 preprocessing — the standardisation half, shared with the member who wrote the rest of it · §2.3 the three regression models · §3.2 regression model setup and fine-tuning |
-| **Presentation** | Section 3 — introduction of the three regression models and their setup |
+| Code | Linear Regression in both notebooks; other members implemented Random Forest, Gradient Boosting and classification |
+| Report | Standardisation part of §2.2, the regression model descriptions in §2.3, and regression setup/tuning in §3.2 |
+| Presentation | Section 3: regression models and their setup |
 
-The comparison and analysis of the three regression models — section 4 of the presentation — was a
-different member's section, and the classification half was two others'. `docs/` holds the
-presentation with the team's contribution table, so the split can be read rather than taken on trust.
+The regression comparison presentation was another member's section. The team's contribution tables are in [the report](docs/CSCI323_FT14_Report.pdf) and [presentation](docs/CSCI323_FT14_Presentation.pdf). [Recorded presentation](https://youtu.be/-RX6cVTDkVg).
 
-Writing the section that introduces all three models while coding only one of them turned out to be
-the useful part of this project, because it meant reading the other two closely enough to explain
-what they do differently — and then watching my own model land almost on top of them.
+## Data and method
 
----
+The [UCI Wine Quality data](https://archive.ics.uci.edu/dataset/186/wine+quality) contain 11 physicochemical measurements and an integer quality score. Red and white wine are analysed separately. Removing exact duplicate rows reduces red from 1,599 to 1,359 observations and white from 4,898 to 3,961, before an 80/20 split. This avoids identical rows crossing the split, but changes the evaluation population from the raw dataset.
 
-### 1. The baseline that was not beaten by much
+Linear Regression uses `StandardScaler` inside a pipeline and five-fold cross-validation over `fit_intercept=True/False`. This is a narrow baseline search. Scaling expresses coefficients per training-set standard deviation; unregularised OLS predictions do not generally require it. Keeping preprocessing inside the pipeline also makes its fit scope explicit.
 
-Linear Regression is the model you include so the ensembles have something to beat. On this data they
-barely did. From the notebook's comparison table, which is another member's section:
+## Recorded regression results
 
-| Red wine | Train RMSE | Test RMSE | Train R² | Test R² |
-|---|---|---|---|---|
-| **Linear Regression** (mine) | 0.6560 | **0.6629** | 0.3703 | 0.3294 |
-| Random Forest Regressor | 0.4468 | 0.6451 | 0.7079 | 0.3649 |
-| Gradient Boosting Regressor | 0.5388 | 0.6441 | 0.5752 | 0.3670 |
+These are the team's saved notebook results; ensemble code and results are credited to the other members.
 
-| White wine | Train RMSE | Test RMSE | Train R² | Test R² |
-|---|---|---|---|---|
-| **Linear Regression** (mine) | 0.7443 | **0.7505** | 0.3003 | 0.2947 |
-| Random Forest Regressor | **0.2564** | 0.7013 | **0.9170** | 0.3841 |
-| Gradient Boosting Regressor | 0.5705 | 0.7109 | 0.5889 | 0.3672 |
+| Dataset | Model | Train RMSE | Test RMSE | Test R² |
+|---|---|---:|---:|---:|
+| Red | Linear Regression | 0.6560 | 0.6629 | 0.3294 |
+| Red | Random Forest | 0.4468 | 0.6451 | 0.3649 |
+| Red | Gradient Boosting | 0.5388 | 0.6441 | 0.3670 |
+| White | Linear Regression | 0.7443 | 0.7505 | 0.2947 |
+| White | Random Forest | 0.2564 | 0.7013 | 0.3841 |
+| White | Gradient Boosting | 0.5705 | 0.7109 | 0.3672 |
 
-Two things in those tables are worth reading together, and they are about the columns most model
-comparisons drop.
+OLS provides a useful reference, but it can overfit and its small train–test gap does not measure the noise floor. Random Forest reduces white-wine test RMSE by about 6.6% versus OLS despite a larger training gap. For red wine, the 0.0010 RMSE difference between the two ensembles is too small to treat as a reliable ranking from one split.
 
-**The ensembles win on test error by 0.02 on red and 0.05 on white.** That is the whole return on
-replacing a closed-form fit with a tuned forest of hundreds of trees.
+![OLS residuals, red wine](images/residuals_linear_regression_red.png)
 
-**My model is the only one whose two error columns are the same number.** Train 0.6560 against test
-0.6629 on red, 0.7443 against 0.7505 on white — a gap of about 0.007 either way. The white-wine
-forest has a gap of 0.445 and a training R² of 0.9170 against a test R² of 0.3841. It has
-substantially memorised the training set, and what that bought over my baseline is 0.049 RMSE.
+A wide residual scatter alone does not establish underfitting or nonlinearity. Systematic residual patterns, repeated validation and model comparisons would be needed for a stronger diagnosis.
 
-Linear Regression cannot overfit here because there is almost nothing in it to overfit with: eleven
-coefficients and an intercept. The only hyperparameter worth searching was `fit_intercept`, and
-`True` won, which it almost always does — there was nothing for the grid search to decide. **Those
-two facts are the same fact.** A model with nothing to tune is a model that cannot flatter itself,
-which is what makes it usable as a ruler rather than a competitor. The distance between my train and
-test error is roughly the noise floor, every model in the table is stuck near the same test error,
-and the ceiling in this problem is therefore the eleven features and not the choice of algorithm.
+![Standardised OLS coefficients, red wine](images/coefficients_linear_regression_red.png)
 
-I reached the same conclusion once before by a different route. On a delivery-delay dataset I
-compared three classifiers and found that a model which learned nothing at all took the top spot on
-two of four metrics — there the metrics disagreed with each other, and here they agree and all report
-the same small number. Different symptom, same diagnosis: the limit was in the columns, not in the
-algorithm.
+Each coefficient describes a one-training-standard-deviation change, holding other model inputs fixed. Correlated features complicate interpretation, and these associations are not causal. Tree impurity importance has no positive/negative direction.
 
----
-
-### 2. Where the scaler sits
-
-```python
-lr_pipeline = Pipeline([
-    ("scaler", StandardScaler()),
-    ("linreg", LinearRegression())
-])
-
-lr_grid = GridSearchCV(lr_pipeline, {"linreg__fit_intercept": [True, False]},
-                       cv=5, scoring="neg_mean_squared_error", n_jobs=-1)
-```
-
-The scaler is a step inside the pipeline rather than something applied to the data beforehand, and
-that is the only detail in this block I would defend at length. `GridSearchCV` refits the whole
-pipeline on each of the five training folds, so the mean and standard deviation used to standardise
-come from four folds and are then applied to the fifth. Scaling the full training set first would
-compute those two numbers from data the model is about to be scored on, and every cross-validation
-number in this notebook would come out slightly optimistic.
-
-§2.2 of the report is where I set out why the scaling is needed at all: Linear Regression fits
-weights by minimising squared error, so a feature measured in hundreds pulls harder on the
-optimisation than one measured in units, purely because of its range. The tree models do not need
-it — a decision tree splits on a threshold within a single feature, and a threshold does not care
-what the neighbouring feature's units are. That distinction is why the scaler appears in my pipeline
-and not in the other two.
-
----
-
-### 3. What the residuals say about the model I was asked to build
-
-![Residual plot, Linear Regression, red wine](images/residuals_linear_regression_red.png)
-
-The residuals spread wide around zero across the whole prediction range rather than tightening
-anywhere, which is the signature of a model that is underfitting rather than one that is overfitting
-or heteroscedastic. It is consistent with the train-test numbers above: the model is not failing on
-unseen data, it is failing evenly everywhere, which is what a linear form does to a relationship that
-is not linear.
-
-![Linear Regression coefficients, red wine](images/coefficients_linear_regression_red.png)
-
-For a linear model the coefficients are the interpretation — each one is the change in predicted
-quality for a one-unit change in that feature with the others held constant, which is a statement the
-tree models cannot make about themselves at all. Because the features were standardised first, the
-coefficients are on a common scale and can be compared to each other directly.
-
----
-
-### 4. The sections I wrote
-
-`docs/CSCI323_FT14_Report.pdf` is the team's submitted report, and its first page is the work split —
-which section belonged to whom, in the team's own words. `docs/regression_sections.docx` is my part
-of it — three sections:
-
-- **§2.2 Data cleaning and preprocessing.** No missing values in either dataset — the UCI copies are
-  clean — but duplicates are not rare: red drops from 1,599 rows to 1,359 and white from 4,898 to
-  3,961, so about a fifth of the white dataset is repeated rows. They are removed **before** the
-  split, which is the part that matters: an identical row on both sides of the split is a free
-  correct answer at test time. Then the StandardScaler argument above, with the formula and the
-  reason the tree models are exempt.
-- **§2.3 The three regression models.** What each one is and what it assumes, written for a reader
-  who has not met them: the linear form and OLS, bagging and the averaging of independent trees, and
-  boosting as sequential fitting to residuals with a learning rate controlling each tree's
-  contribution.
-- **§3.2 Setup and fine-tuning.** The search space for every model, the values the search chose on
-  each dataset, and the cross-validated RMSE it reached.
-
-Every figure in §3.2 is reproduced from the notebook's own cell outputs; I checked them against the
-committed notebooks rather than transcribing from an earlier draft.
-
-One result in that table is worth naming because it points the same way as section 1. The Random
-Forest search ran over `min_samples_leaf` of 1, 2 or 4 and `min_samples_split` of 2, 5 or 10 — the
-same space on both datasets. On red wine it settled on 4 and 10, constrained leaves. On white it
-took 1 and 2, no constraint at all, which is the configuration behind that 0.9170 training R². The
-same space, run on a dataset three times larger, walked to the opposite end of itself, and putting
-the two rows next to each other in one table is how that becomes visible.
-
----
-
-### Repository Structure
-
-```
-wine-quality-regression/
-├── WineQuality_RED.ipynb          # 68 cells. My Linear Regression block is cells 33-43.
-├── WineQuality_White.ipynb        # 67 cells. Mine is cells 32-42.
-├── wine+quality/                  # UCI data, red and white, plus the variable description
-│                                  # notebooks read this path, so both stay where they were
-├── docs/
-│   ├── CSCI323_FT14_Report.pdf         # the team's report; page 1 is the work split
-│   ├── regression_sections.docx        # my sections 2.2, 2.3 and 3.2
-│   └── CSCI323_FT14_Presentation.pdf   # includes the team's contribution table
-├── images/                        # two charts, extracted from the notebook's own outputs
-└── README.md
-```
-
-### How to Run
+## Run and provenance
 
 ```bash
-git clone https://github.com/JinWanKim98/wine-quality-regression.git
-cd wine-quality-regression
-pip install pandas numpy matplotlib seaborn scikit-learn
+pip install -r requirements.txt
 jupyter notebook WineQuality_RED.ipynb
 ```
 
-The notebooks sit in the repository root because that is where they expect `wine+quality/` to be.
-Every cell output is saved in the committed files, so they read correctly without running anything.
+Run from the repository root; both notebooks read the included `wine+quality/` CSVs. The missing ZIP extraction step has been removed. Notebook prose and this README were corrected during portfolio maintenance; the PDFs retain the submitted team report and presentation. Read the corrected interpretation here alongside those historical documents.
 
-### Provenance
-
-Group project, five members, CSCI 323 at UOW (SIM Singapore), Semester 2 2026. The work was split by
-task at the start: one member per regression model for the coding and tuning, one for the regression
-comparison, and the classification half across the remaining members. I took Linear Regression.
-
-The notebooks are the team's submitted files, unchanged. Teammates are named throughout `docs/`,
-including on both the work split and the contribution table, which is the point of those tables.
-University ID numbers have been removed from the report; nothing else in it was altered, and no
-student ID appears anywhere in this repository.
-
-The presentation was recorded by all five of us and is on YouTube:
-**https://youtu.be/-RX6cVTDkVg** — my part is the regression models and their setup.
-
-### Limitations
-
-- **I am not the author of the Random Forest or Gradient Boosting code, or of the comparison
-  section.** Their numbers are quoted here from the committed notebooks because my model is only
-  interesting next to theirs. The reasoning about what those numbers mean is mine; the models and the
-  comparison write-up are not.
-- **The train-test gap is a weak measure of overfitting on its own.** It shows the white-wine forest
-  memorising, but a small gap does not prove a model is well specified — mine has a small gap because
-  it is too rigid to fit the training set closely in the first place.
-- **Duplicate removal happened before the split**, which is right for preventing the same row landing
-  on both sides, but it also means the test set is not a sample of the raw data as collected.
-- **Both datasets are one region and one certification body.** Nothing here says how these models
-  behave on wine scored by a different panel.
+Limitations include a single holdout, full-dataset exploratory plots before splitting, subjective ordinal ratings modelled as continuous, and wine from a limited source. Similar scores do not prove an information ceiling in the 11 features. The original contribution split still applies to the corrected notebooks.
