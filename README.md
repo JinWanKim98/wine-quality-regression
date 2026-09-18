@@ -2,6 +2,12 @@
 
 Five-person CSCI 323 group project at UOW (SIM Singapore). The team compared classification and regression models on the UCI red and white wine datasets. My modelling contribution was **Linear Regression**, including its pipeline, small parameter search and performance report.
 
+## Tech stack
+
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white) ![pandas](https://img.shields.io/badge/pandas-150458?style=flat&logo=pandas&logoColor=white) ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=flat&logo=scikitlearn&logoColor=white) ![matplotlib](https://img.shields.io/badge/matplotlib-11557C?style=flat)
+
+**My implementation:** the scikit-learn Linear Regression pipeline, parameter search and evaluation. Ensemble and classification models were implemented by teammates.
+
 ## My contribution
 
 | Deliverable | Scope |
