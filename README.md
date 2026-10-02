@@ -1,6 +1,6 @@
 # Wine Quality Regression
 
-Five-person CSCI 323 group project at UOW (SIM Singapore). The team compared classification and regression models on the UCI red and white wine datasets. My modelling contribution was **Linear Regression**, including its pipeline, small parameter search and performance report.
+Five-person university group project at UOW (SIM Singapore). The team compared classification and regression models on the UCI red and white wine datasets. My modelling contribution was **Linear Regression**, including its pipeline, small parameter search and performance report.
 
 ## Tech stack
 
@@ -16,7 +16,7 @@ Five-person CSCI 323 group project at UOW (SIM Singapore). The team compared cla
 | Report | Standardisation part of §2.2, the regression model descriptions in §2.3, and regression setup/tuning in §3.2 |
 | Presentation | Section 3: regression models and their setup |
 
-The regression comparison presentation was another member's section. The team's contribution tables are in [the report](docs/CSCI323_FT14_Report.pdf) and [presentation](docs/CSCI323_FT14_Presentation.pdf). [Recorded presentation](https://youtu.be/-RX6cVTDkVg).
+The regression comparison presentation was another member's section. The team's contribution tables are in [the report](docs/team_report.pdf) and [presentation](docs/team_presentation.pdf). [Recorded presentation](https://youtu.be/-RX6cVTDkVg).
 
 ## Data and method
 
@@ -54,6 +54,6 @@ pip install -r requirements.txt
 jupyter notebook WineQuality_RED.ipynb
 ```
 
-Run from the repository root; both notebooks read the included `wine+quality/` CSVs. The missing ZIP extraction step has been removed. Notebook prose and this README were corrected during portfolio maintenance; the PDFs retain the submitted team report and presentation. Read the corrected interpretation here alongside those historical documents.
+Run from the repository root; both notebooks read the included `wine+quality/` CSVs. The missing ZIP extraction step has been removed. Notebook prose and this README were updated after submission; the PDFs are the submitted team report and presentation, with the subject code masked on their covers.
 
-Limitations include a single holdout, full-dataset exploratory plots before splitting, subjective ordinal ratings modelled as continuous, and wine from a limited source. Similar scores do not prove an information ceiling in the 11 features. The original contribution split still applies to the corrected notebooks.
+Limitations include a single holdout, full-dataset exploratory plots before splitting, subjective ordinal ratings modelled as continuous, and wine from a limited source. Similar scores do not prove an information ceiling in the 11 features. The original contribution split still applies to the updated notebooks.
